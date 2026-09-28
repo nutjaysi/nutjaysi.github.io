@@ -1114,8 +1114,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ดึงข้อมูลแบบ Real-time มาแสดงผลแทน localStorage เดิม
-  // ดึงข้อมูลแบบ Real-time มาแสดงผลอัตโนมัติ
+    // ดึงข้อมูลแบบ Real-time จาก Firebase
   onSnapshot(collection(db, "scripts"), (snapshot) => {
     let loadedScripts = [];
     snapshot.forEach((docSnap) => {
@@ -1124,9 +1123,19 @@
         id: docSnap.id,
         title: data.title || data.name || 'ไม่มีชื่อ',
         code: data.code || '',
-        author: data.author || 'ไม่ระบุ'
+        author: data.author || 'ไม่ระบุ',
+        type: data.type || 'roblox' // กำหนดประเภทให้ตรงกับแท็บ (roblox หรือ web)
       });
     });
+    
+    console.log("ข้อมูลที่ดึงมาได้:", loadedScripts);
+    window.scriptsData = loadedScripts;
+    
+    // สั่งวาดหน้าจอใหม่ทันที
+    if (typeof renderScripts === 'function') {
+      renderScripts();
+    }
+  });
     
     // ส่งข้อมูลให้ตัวแปรของเว็บและ window พร้อมกัน
     window.scriptsData = loadedScripts;
