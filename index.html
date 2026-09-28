@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAYSI</title>
+    
+    <!-- Open Graph Meta Tags สำหรับควบคุมรูปและข้อความเวลาแชร์ลิงก์ (แก้ปัญหาพรีวิวแชท) -->
+    <meta property="og:title" content="JAYSI - แหล่งรวมสคริปต์และไฟล์แจกฟรี 100%">
+    <meta property="og:description" content="แหล่งรวมสคริปต์และไฟล์แจกฟรี 100% อัปเดตใหม่ทุกวัน">
+    <meta property="og:image" content="">
+    <meta property="og:url" content="https://nutjaysi.github.io/">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" id="siteFavicon" href="">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        const savedTheme = JSON.parse(localStorage.getItem('jaysi_custom_theme')) || {
+            bgColor: '#030712',
+            primaryColor: '#0085ff',
+            cardRadius: '28px',
+            showStars: true
+        };
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: savedTheme.primaryColor,
+                            600: savedTheme.primaryColor,
+                            700: '#0052a3',
+                            900: '#003366',
+                            950: '#0a0f1d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style id="dynamicThemeCSS">
+        body {
+            background-color: var(--custom-bg, #030712);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(0, 133, 255, 0.20) 0%, transparent 50%),
+                radial-gradient(circle at 85% 80%, rgba(99, 102, 241, 0.16) 0%, transparent 55%),
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.1) 0%, transparent 70%),
+                radial-gradient(2px 2px at 25px 35px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 80px, rgba(0, 133, 255, 0.85), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 100px 45px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 180px 140px, rgba(255,255,255,0.9), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 100% 100%, 100% 100%, 100% 100%, 400px 400px, 400px 400px, 400px 400px, 400px 400px;
+            background-attachment: fixed;
+            animation: bgDrift 25s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgDrift {
+            0% { background-position: 0% 0%, 100% 100%, 50% 50%, 0px 0px, 20px 40px, 50px 10px, 100px 80px; }
+            50% { background-position: 3% 4%, 97% 96%, 48% 52%, 25px 35px, 45px 60px, 70px 30px, 125px 105px; }
+            100% { background-position: -2% -3%, 102% 101%, 52% 48%, -10px 15px, 10px 25px, 30px -5px, 80px 60px; }
+        }
+
+        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee-track { display: inline-block; animation: marqueeScroll 35s linear infinite; }
+        @keyframes marqueeScroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .capsule-card {
+            border-radius: var(--custom-radius, 28px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .capsule-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -8px var(--custom-shadow, rgba(0, 133, 255, 0.25));
+        }
+
+        .modal-bounce { animation: bounceIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+
+        @keyframes slideInRight { 0% { opacity: 0; transform: translateX(60px); } 100% { opacity: 1; transform: translateX(0); } }
+        .toast-slide { animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b1329; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    </style>
+</head>
+<body class="text-slate-100 font-sans min-h-screen flex flex-col selection:bg-primary-500 selection:text-white">
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed top-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none items-end"></div>
+
+    <!-- Announcement Bar -->
+    <div class="bg-gradient-to-r from-primary-900 via-primary-700 to-primary-900 text-white text-xs py-2.5 px-4 overflow-hidden shadow-md border-b border-primary-500/30 flex items-center">
+        <div class="marquee-container flex-1">
+            <div id="marqueeTrack" class="marquee-track font-medium text-slate-100 flex items-center space-x-8"></div>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="sticky top-4 z-40 px-4 max-w-7xl mx-auto w-full">
+        <div class="bg-slate-900/90 backdrop-blur-md border border-slate-800 shadow-xl rounded-full px-6 h-20 flex items-center justify-between transition-all">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilter()">
+                <div id="brandLogoContainer" class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-700 to-primary-500 flex items-center justify-center text-white shadow-md shadow-primary-500/30 overflow-hidden">
+                    <i id="brandLogoIcon" class="fa-solid fa-code text-lg"></i>
+                    <img id="brandLogoImg" src="" alt="Logo" onerror="this.classList.add('hidden'); document.getElementById('brandLogoIcon').classList.remove('hidden');" class="w-full h-full object-cover hidden">
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-primary-500 bg-clip-text text-transparent">JAYSI</span>
+                    <span class="block text-[10px] uppercase font-semibold text-slate-400 tracking-widest">เจย์ชี้</span>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"><i class="fa-solid fa-magnifying-glass text-sm"></i></span>
+                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="ค้นหา..." class="w-full pl-11 pr-4 py-2.5 bg-slate-800/85 hover:bg-slate-800 focus:bg-slate-900 border border-slate-700 focus:border-primary-500 rounded-full text-sm text-slate-100 outline-none transition shadow-inner">
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div id="authSection">
+                    <button onclick="openGoogleOAuthModal()" class="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-full text-xs font-semibold transition shadow-md shadow-primary-500/20">
+                        <i class="fa-brands fa-google"></i>
+                        <span>เข้าสู่ระบบด้วย Google</span>
+                    </button>
+                </div>
+
+                <div id="userProfileMenu" class="relative hidden">
+                    <button onclick="toggleUserDropdown()" class="flex items-center space-x-2.5 p-1.5 pr-4 rounded-full hover:bg-slate-800 border border-slate-700 transition">
+                        <img id="navUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'" class="w-9 h-9 rounded-full object-cover shadow-inner">
+                        <span id="navUserName" class="text-xs font-semibold text-slate-200 max-w-[120px] truncate">ผู้ใช้งาน</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                    </button>
+
+                    <div id="dropdownContent" class="absolute right-0 mt-3 w-60 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl py-3 hidden z-50 modal-bounce">
+                        <div class="px-5 py-2.5 border-b border-slate-800">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">บัญชีผู้ใช้</p>
+                            <p id="dropdownUserEmail" class="text-xs font-bold text-slate-200 truncate mt-0.5">email@gmail.com</p>
+                        </div>
+                        <div class="p-2 space-y-1">
+                            <a href="#" onclick="openProfileModal('info'); toggleUserDropdown(); return false;" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-primary-600/20 hover:text-primary-400 rounded-2xl transition">
+                                <i class="fa-solid fa-id-card w-4 text-slate-400"></i>
+                                <span>โปรไฟล์</span>
+                            </a>
+                            <a href="#" onclick="openProfileModal('history'); toggleUserDropdown(); return false;" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-primary-600/20 hover:text-primary-400 rounded-2xl transition">
+                                <i class="fa-solid fa-clock-rotate-left w-4 text-slate-400"></i>
+                                <span>ประวัติ</span>
+                            </a>
+                            <div id="adminMenuLink" class="hidden space-y-1">
+                                <a href="#" onclick="openProfileModal('theme'); toggleUserDropdown(); return false;" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-indigo-400 hover:bg-indigo-500/20 rounded-2xl transition">
+                                    <i class="fa-solid fa-palette w-4"></i>
+                                    <span>แต่งเว็บไซต์</span>
+                                </a>
+                                <a href="#" onclick="openProfileModal('admin'); toggleUserDropdown(); return false;" class="flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-amber-400 hover:bg-amber-500/20 rounded-2xl transition">
+                                    <i class="fa-solid fa-shield-halved w-4"></i>
+                                    <span>แอดมิน</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-800 my-1"></div>
+                        <div class="px-2 pt-1">
+                            <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-2.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 rounded-2xl transition text-left">
+                                <i class="fa-solid fa-right-from-bracket w-4"></i>
+                                <span>ออกจากระบบ</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-200 transition">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden mt-2 bg-slate-900/95 backdrop-blur border border-slate-800 rounded-3xl p-4 shadow-2xl modal-bounce">
+            <div class="relative mb-3">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+                <input type="text" oninput="handleSearch(this.value)" placeholder="ค้นหา..." class="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded-full text-xs text-slate-100 outline-none">
+            </div>
+            <div id="mobileCategoryList" class="space-y-1 text-xs font-semibold"></div>
+        </div>
+    </header>
+
+    <!-- Poster Slider (เริ่มต้นว่างเปล่า เติมเองผ่านแอดมิน) -->
+    <section id="sliderSectionWrapper" class="max-w-7xl mx-auto px-4 mt-6 w-full hidden">
+        <div class="relative bg-slate-900/90 backdrop-blur rounded-[36px] overflow-hidden shadow-2xl border border-slate-800 p-8 md:p-12">
+            <div id="sliderContainer" class="relative z-10 flex transition-transform duration-700 ease-in-out"></div>
+            <div id="sliderDots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20"></div>
+        </div>
+    </section>
+
+    <!-- Real-time Stats Bar -->
+    <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 rounded-[24px] shadow-lg flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl"><i class="fa-solid fa-users-viewfinder"></i></div>
+                <div><p class="text-[11px] font-semibold text-slate-400 uppercase">ผู้ใช้งานออนไลน์</p><h3 id="realtimeOnlineCount" class="text-xl font-bold text-slate-100">1</h3></div>
+            </div>
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 rounded-[24px] shadow-lg flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-primary-500/10 text-primary-400 flex items-center justify-center text-xl"><i class="fa-solid fa-address-card"></i></div>
+                <div><p class="text-[11px] font-semibold text-slate-400 uppercase">บัญชีผู้ใช้ทั้งหมด</p><h3 id="realtimeUsersCount" class="text-xl font-bold text-slate-100">0</h3></div>
+            </div>
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 p-5 rounded-[24px] shadow-lg flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl"><i class="fa-solid fa-folder-open"></i></div>
+                <div><p class="text-[11px] font-semibold text-slate-400 uppercase">ไฟล์ & สคริปต์ในระบบ</p><h3 id="realtimeFilesCount" class="text-xl font-bold text-slate-100">0</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 bg-slate-900/80 backdrop-blur p-3 rounded-[28px] border border-slate-800 shadow-lg">
+            <div id="categoryTabsContainer" class="flex items-center space-x-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar"></div>
+            <div class="text-xs font-bold text-slate-400 px-4 whitespace-nowrap">พบไฟล์ทั้งหมด <span id="itemCount" class="text-primary-400">0</span> รายการ</div>
+        </div>
+        <div id="scriptGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="emptyState" class="hidden text-center py-20 bg-slate-900/80 backdrop-blur rounded-[32px] border border-slate-800 shadow-lg">
+            <div class="w-16 h-16 bg-slate-800 text-slate-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fa-solid fa-folder-open"></i></div>
+            <h3 class="text-base font-bold text-slate-200">ยังไม่มีไฟล์หรือสคริปต์ในระบบ</h3>
+            <p class="text-xs text-slate-400 mt-1">คุณสามารถเข้าสู่ระบบด้วยบัญชีแอดมินเพื่อเพิ่มไฟล์ใหม่ได้ทันที</p>
+        </div>
+    </main>
+
+    <!-- Community & Contact Section -->
+    <section class="max-w-7xl mx-auto px-4 mb-12 w-full">
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-[32px] p-8 shadow-xl">
+            <div class="text-center max-w-xl mx-auto mb-8">
+                <span class="bg-primary-600/20 text-primary-400 text-[11px] font-bold px-3 py-1 rounded-full border border-primary-500/30">COMMUNITY & SUPPORT</span>
+                <h3 class="text-xl md:text-2xl font-bold text-white mt-2">ช่องทางติดต่อ & คอมมูนิตี้</h3>
+            </div>
+            <div id="frontendContactsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </div>
+    </section>
+
+    <!-- Google OAuth Login Modal -->
+    <div id="oauthModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-[36px] shadow-2xl overflow-hidden modal-bounce border border-slate-800 p-8 text-center relative">
+            <button onclick="closeGoogleOAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-sm"></i></button>
+            <svg class="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.15C3.17 21.32 7.23 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.18C.43 8.12 0 9.83 0 12s.43 3.88 1.18 5.4l4.09-3.16z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.17 2.68 1.18 6.6l4.09 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+            </svg>
+            <h3 class="text-xl font-bold text-slate-100 mb-1">เข้าสู่ระบบด้วย Google</h3>
+            <p class="text-xs text-slate-400 mb-6">เลือกบัญชี Google เพื่อใช้งานระบบ JAYSI ฟรี 100%</p>
+            <div id="g_id_onload" data-client_id="1015785705515-232td1rc0i58k28k18o0h4vpjd6dl1m9.apps.googleusercontent.com" data-context="signin" data-ux_mode="popup" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+            <div class="g_id_signin flex justify-center mb-2" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+        </div>
+    </div>
+
+    <!-- Ban Warning Modal -->
+    <div id="banModal" class="fixed inset-0 z-[70] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-[36px] shadow-2xl overflow-hidden modal-bounce border border-rose-500/50 p-8 text-center relative">
+            <div class="w-16 h-16 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner border border-rose-500/30"><i class="fa-solid fa-ban"></i></div>
+            <h3 class="text-xl font-bold text-slate-100 mb-2">บัญชีถูกระงับการใช้งาน</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-6">บัญชี Google นี้ถูกระงับการใช้งาน (Banned) จากระบบ</p>
+            <div class="space-y-2">
+                <a id="banModalContactBtn" href="https://discord.gg/" target="_blank" class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl text-xs font-semibold shadow-lg transition flex items-center justify-center space-x-2"><i class="fa-solid fa-headset"></i><span>ติดต่อแอดมิน / ขออุทธรณ์ปลดแบน</span></a>
+                <button onclick="closeBanModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl text-xs font-semibold transition">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roblox Script Copy Modal -->
+    <div id="robloxModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-lg rounded-[36px] shadow-2xl overflow-hidden modal-bounce border border-slate-800 p-8 flex flex-col">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                <h3 id="robloxModalTitle" class="font-bold text-slate-100 text-sm">Roblox Script Hub</h3>
+                <button onclick="closeRobloxModal()" class="text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-sm"></i></button>
+            </div>
+            <textarea id="robloxScriptCode" readonly class="w-full h-48 p-4 bg-slate-950 text-emerald-400 font-mono text-xs rounded-2xl outline-none resize-none shadow-inner border border-slate-800 mb-4"></textarea>
+            <div class="flex items-center justify-between">
+                <span id="robloxCopyStatus" class="text-xs text-slate-400 font-medium">กดปุ่มเพื่อคัดลอกโค้ดสคริปต์</span>
+                <button onclick="copyRobloxScript()" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-full text-xs font-semibold shadow-md transition flex items-center space-x-2"><i class="fa-solid fa-copy"></i><span>คัดลอกสคริปต์</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile & Admin Control Panel Modal -->
+    <div id="profileModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden modal-bounce border border-slate-800 p-6 sm:p-8 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800 shrink-0">
+                <div class="flex items-center space-x-3 truncate pr-2">
+                    <img id="modalUserAvatar" src="" class="w-11 h-11 rounded-full object-cover shadow shrink-0">
+                    <div class="truncate">
+                        <h3 id="modalUserName" class="font-bold text-slate-100 text-sm truncate">ชื่อผู้ใช้</h3>
+                        <p id="modalUserEmail" class="text-[11px] text-slate-400 truncate">email@gmail.com</p>
+                    </div>
+                </div>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800 transition shrink-0"><i class="fa-solid fa-xmark text-sm"></i></button>
+            </div>
+
+            <!-- Profile Nav Tabs -->
+            <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3 mb-4 shrink-0">
+                <button onclick="switchProfileTab('info')" id="tabInfoBtn" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-primary-600 text-white transition">โปรไฟล์ & My ID</button>
+                <button onclick="switchProfileTab('history')" id="tabHistoryBtn" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition">ประวัติการโหลด</button>
+                <button onclick="switchProfileTab('theme')" id="tabThemeBtn" class="hidden px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition">🎨 แต่งเว็บ</button>
+                <button onclick="switchProfileTab('admin')" id="tabAdminBtn" class="hidden px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition">👑 แอดมิน</button>
+            </div>
+
+            <div id="modalContentArea" class="overflow-y-auto flex-1 space-y-4 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div id="userManagementDetailModal" class="fixed inset-0 z-[60] bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-[36px] shadow-2xl overflow-hidden modal-bounce border border-slate-800 p-6 relative flex flex-col">
+            <button onclick="closeUserDetailModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-sm"></i></button>
+            <div class="text-center mb-5">
+                <img id="detailUserAvatar" src="" class="w-20 h-20 rounded-full object-cover mx-auto mb-3 shadow-lg border-2 border-primary-500/50">
+                <h3 id="detailUserName" class="font-bold text-slate-100 text-base">ชื่อผู้ใช้งาน</h3>
+                <p id="detailUserEmail" class="text-xs text-slate-400 mt-0.5">email@gmail.com</p>
+            </div>
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2.5 mb-6 text-xs">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800"><span class="text-slate-400">My ID:</span><span id="detailUserMyId" class="font-bold text-primary-400">JAY-000000</span></div>
+                <div class="flex justify-between items-center pb-2 border-b border-slate-800"><span class="text-slate-400">สถานะสิทธิ์:</span><span id="detailUserRoleBadge" class="font-bold px-2.5 py-0.5 rounded-full">สมาชิกทั่วไป</span></div>
+                <div class="flex justify-between items-center"><span class="text-slate-400">สถานะบัญชี:</span><span id="detailUserBanBadge" class="font-bold px-2.5 py-0.5 rounded-full">ปกติ</span></div>
+            </div>
+            <div id="detailUserActionButtons" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <footer class="bg-slate-900/80 backdrop-blur border-t border-slate-800 py-8 text-center text-xs text-slate-400 mt-auto">
+        &copy; ยินดีต้อนรับสู่ JAYSI เป็นเว็บไซต์แจกระบบต่างๆ ขอบคุณที่ใช้บริการ v1.1.2
+    </footer>
+
+    <script>
+        const SecurityShield = {
+            sanitize(str) {
+                if (typeof str !== 'string') return str;
+                return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            }
+        };
+
+        // ตั้งค่าข้อมูลเริ่มต้นให้ว่างเปล่าตามที่คุณต้องการ
+        let scriptsData = JSON.parse(localStorage.getItem('jaysi_scripts')) || [];
+        let currentUser = null;
+        let downloadHistory = JSON.parse(localStorage.getItem('jaysi_history')) || [];
+        let siteLogo = localStorage.getItem('jaysi_logo') || '';
+        let unbanContactUrl = localStorage.getItem('jaysi_unban_url') || 'https://discord.gg/';
+        let announcementsData = JSON.parse(localStorage.getItem('jaysi_announcements')) || [{ text: 'ยินดีต้อนรับสู่ JAYSI แหล่งรวมสคริปต์และไฟล์แจกฟรี 100%', icon: 'fa-bullhorn' }];
+        let rawCats = JSON.parse(localStorage.getItem('jaysi_categories')) || [{ name: 'Roblox Script', icon: 'fa-gamepad' }, { name: 'Web Script', icon: 'fa-globe' }];
+        let categoriesData = rawCats.map(c => typeof c === 'string' ? { name: c, icon: 'fa-folder' } : c);
+        let contactsData = JSON.parse(localStorage.getItem('jaysi_contacts')) || [];
+        let postersData = JSON.parse(localStorage.getItem('jaysi_posters')) || [];
+        
+        const masterIconList = [
+            'fa-bullhorn', 'fa-fire', 'fa-star', 'fa-bell', 'fa-gamepad', 'fa-code', 'fa-shield-halved', 'fa-gift', 'fa-bolt', 'fa-heart', 'fa-trophy', 'fa-rocket', 'fa-folder', 'fa-tag', 'fa-user', 'fa-lock', 'fa-key', 'fa-database', 'fa-server', 'fa-globe', 'fa-terminal', 'fa-robot', 'fa-palette', 'fa-cloud-arrow-down', 'fa-cloud-arrow-up', 'fa-circle-check', 'fa-triangle-exclamation', 'fa-discord', 'fa-facebook', 'fa-telegram', 'fa-youtube', 'fa-twitter', 'fa-github', 'fa-tiktok', 'fa-instagram', 'fa-twitch',
+            'fa-house', 'fa-envelope', 'fa-gear', 'fa-magnifying-glass', 'fa-cart-shopping', 'fa-share', 'fa-trash', 'fa-pen', 'fa-check', 'fa-xmark', 'fa-bars', 'fa-arrow-right', 'fa-arrow-left', 'fa-arrow-up', 'fa-arrow-down', 'fa-circle-user', 'fa-shield', 'fa-unlock', 'fa-eye', 'fa-eye-slash', 'fa-download', 'fa-upload', 'fa-cloud', 'fa-file', 'fa-image', 'fa-video', 'fa-music', 'fa-book', 'fa-bookmark', 'fa-tags', 'fa-filter', 'fa-sort', 'fa-list', 'fa-table', 'fa-grip', 'fa-cube', 'fa-cubes', 'fa-puzzle-piece', 'fa-gem', 'fa-crown', 'fa-medal', 'fa-award', 'fa-certificate', 'fa-flag', 'fa-compass', 'fa-map', 'fa-location-dot', 'fa-phone', 'fa-camera', 'fa-microphone', 'fa-volume-high', 'fa-volume-xmark', 'fa-play', 'fa-pause', 'fa-stop', 'fa-forward', 'fa-backward', 'fa-power-off', 'fa-rotate', 'fa-arrows-rotate', 'fa-sync', 'fa-spinner', 'fa-circle-notch', 'fa-atom', 'fa-flask', 'fa-vial', 'fa-microscope', 'fa-stethoscope', 'fa-hospital', 'fa-pills', 'fa-bed-pulse', 'fa-dumbbell', 'fa-person-running', 'fa-bicycle', 'fa-car', 'fa-bus', 'fa-train', 'fa-plane', 'fa-ship', 'fa-space-shuttle', 'fa-satellite', 'fa-wifi', 'fa-signal', 'fa-bluetooth', 'fa-battery-full', 'fa-plug', 'fa-charging-station', 'fa-laptop', 'fa-desktop', 'fa-mobile-screen', 'fa-tablet-screen-button', 'fa-keyboard', 'fa-computer-mouse', 'fa-headphones', 'fa-vr-cardboard', 'fa-dice', 'fa-chess', 'fa-ghost', 'fa-skull', 'fa-dragon', 'fa-hat-wizard', 'fa-wand-magic-sparkles', 'fa-fire-flame-curved', 'fa-water', 'fa-wind', 'fa-snowflake', 'fa-sun', 'fa-moon', 'fa-cloud-rain', 'fa-bolt-lightning', 'fa-rainbow', 'fa-umbrella', 'fa-tree', 'fa-seedling', 'fa-leaf', 'fa-paw', 'fa-bone', 'fa-fish', 'fa-bugs', 'fa-spider', 'fa-cat', 'fa-dog', 'fa-horse', 'fa-cow', 'fa-piggy-bank', 'fa-money-bill', 'fa-credit-card', 'fa-wallet', 'fa-coins', 'fa-sack-dollar', 'fa-chart-line', 'fa-chart-pie', 'fa-chart-bar', 'fa-bullseye', 'fa-crosshairs', 'fa-bomb', 'fa-shield-cat', 'fa-shield-dog', 'fa-user-secret', 'fa-user-ninja', 'fa-user-astronaut', 'fa-user-tie', 'fa-user-doctor', 'fa-user-graduate', 'fa-users', 'fa-user-group', 'fa-address-book', 'fa-address-card', 'fa-id-card', 'fa-id-badge', 'fa-fingerprint', 'fa-signature', 'fa-pen-nib', 'fa-highlighter', 'fa-eraser', 'fa-scissors', 'fa-paperclip', 'fa-thumbtack', 'fa-clipboard', 'fa-file-lines', 'fa-file-code', 'fa-file-pdf', 'fa-file-word', 'fa-file-excel', 'fa-file-zipper', 'fa-file-image', 'fa-file-video', 'fa-file-audio'
+        ];
+
+        const SUPER_ADMIN_EMAIL = 'nutjaysi095@gmail.com';
+        let adminList = JSON.parse(localStorage.getItem('jaysi_admins')) || [SUPER_ADMIN_EMAIL, 'jaysi.official@gmail.com'];
+        if (!adminList.includes(SUPER_ADMIN_EMAIL)) adminList.push(SUPER_ADMIN_EMAIL);
+        let currentSlideIndex = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyCustomTheme();
+            updateLogoUI();
+            const savedUser = localStorage.getItem('jaysi_user');
+            if (savedUser) { 
+                currentUser = JSON.parse(savedUser); 
+                let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
+                let foundUser = allUsers.find(u => u.email === currentUser.email);
+                if (foundUser && foundUser.isBanned) { openBanModal(); logout(); return; }
+                currentUser.isAdmin = adminList.includes(currentUser.email);
+                updateAuthUI(); 
+            }
+            renderAnnouncements(); renderCategoriesUI(); renderPostersSlider(); renderScripts(); renderContactsUI(); initRealtimeStats();
+        });
+
+        /* Google OAuth Login Handlers */
+        function openGoogleOAuthModal() {
+            document.getElementById('oauthModal').classList.remove('hidden');
+        }
+        function closeGoogleOAuthModal() {
+            document.getElementById('oauthModal').classList.add('hidden');
+        }
+
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function handleCredentialResponse(response) {
+            const responsePayload = parseJwt(response.credential);
+            if (!responsePayload) {
+                showToast('เข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง', 'rose');
+                return;
+            }
+            const email = responsePayload.email;
+            const name = responsePayload.name;
+            const avatar = responsePayload.picture;
+
+            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
+            let existingUser = allUsers.find(u => u.email === email);
+
+            if (existingUser && existingUser.isBanned) {
+                closeGoogleOAuthModal();
+                openBanModal();
+                return;
+            }
+
+            let myId = existingUser ? existingUser.myId : 'JAY-' + Math.floor(100000 + Math.random() * 900000);
+            
+            currentUser = {
+                email,
+                name,
+                avatar,
+                myId,
+                isAdmin: adminList.includes(email)
+            };
+
+            if (!existingUser) {
+                allUsers.push({ email, name, avatar, myId, isBanned: false });
+            } else {
+                existingUser.name = name;
+                existingUser.avatar = avatar;
+            }
+            localStorage.setItem('jaysi_all_users', JSON.stringify(allUsers));
+            localStorage.setItem('jaysi_user', JSON.stringify(currentUser));
+
+            closeGoogleOAuthModal();
+            updateAuthUI();
+            initRealtimeStats();
+            showToast(`ยินดีต้อนรับคุณ ${name} เข้าสู่ระบบสำเร็จ`);
+        }
+
+        function applyCustomTheme() {
+            let theme = JSON.parse(localStorage.getItem('jaysi_custom_theme')) || {
+                bgColor: '#030712',
+                primaryColor: '#0085ff',
+                cardRadius: '28px',
+                showStars: true
+            };
+            document.documentElement.style.setProperty('--custom-bg', theme.bgColor);
+            document.documentElement.style.setProperty('--custom-radius', theme.cardRadius);
+            document.documentElement.style.setProperty('--custom-shadow', theme.primaryColor + '40');
+        }
+
+        function renderAnnouncements() {
+            const track = document.getElementById('marqueeTrack');
+            if (!track) return;
+            track.innerHTML = announcementsData.map(a => `<span class="inline-flex items-center space-x-2"><i class="fa-solid ${a.icon || 'fa-bullhorn'} text-cyan-300"></i><span>${a.text}</span></span>`).join('<span class="mx-6 text-primary-400">|</span>');
+        }
+
+        function renderCategoriesUI() {
+            const tabsContainer = document.getElementById('categoryTabsContainer');
+            const mobileList = document.getElementById('mobileCategoryList');
+            if (!tabsContainer || !mobileList) return;
+            let tabsHtml = `<button onclick="filterCategory('all')" class="cat-tab px-5 py-2.5 rounded-full text-xs font-semibold transition whitespace-nowrap ${currentFilter === 'all' ? 'bg-primary-600 text-white shadow-md' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}"><i class="fa-solid fa-border-all mr-2"></i>ทั้งหมด</button>`;
+            categoriesData.forEach(cat => {
+                const isActive = currentFilter === cat.name;
+                tabsHtml += `<button onclick="filterCategory('${cat.name}')" class="cat-tab px-5 py-2.5 rounded-full text-xs font-semibold transition whitespace-nowrap ${isActive ? 'bg-primary-600 text-white shadow-md' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}"><i class="fa-solid ${cat.icon || 'fa-folder'} mr-2 text-indigo-400"></i>${cat.name}</button>`;
+            });
+            tabsContainer.innerHTML = tabsHtml;
+            mobileList.innerHTML = `<button onclick="filterCategory('all'); toggleMobileMenu();" class="w-full text-left px-4 py-2 rounded-xl hover:bg-slate-800 text-slate-300">ทั้งหมด</button>` + categoriesData.map(cat => `<button onclick="filterCategory('${cat.name}'); toggleMobileMenu();" class="w-full text-left px-4 py-2 rounded-xl hover:bg-slate-800 text-slate-300">${cat.name}</button>`).join('');
+        }
+
+        function renderContactsUI() {
+            const grid = document.getElementById('frontendContactsGrid');
+            if (!grid) return;
+            if (contactsData.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-6 text-xs text-slate-500">ยังไม่มีช่องทางติดต่อ (สามารถเพิ่มได้ในหน้าแอดมิน)</div>`;
+                return;
+            }
+            grid.innerHTML = contactsData.map(c => `
+                <a href="${c.url}" target="_blank" class="bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 p-5 rounded-2xl flex items-center space-x-4 transition group">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-900 ${c.colorClass || 'text-primary-400'} flex items-center justify-center text-xl"><i class="fa-brands ${c.icon}"></i></div>
+                    <div><h4 class="text-xs font-bold text-slate-200">${c.name}</h4><p class="text-[10px] text-slate-400">${c.desc}</p></div>
+                </a>
+            `).join('');
+        }
+
+        function renderPostersSlider() {
+            const wrapper = document.getElementById('sliderSectionWrapper');
+            const container = document.getElementById('sliderContainer');
+            const dotsContainer = document.getElementById('sliderDots');
+            if (!wrapper || !container || !dotsContainer) return;
+            if (postersData.length === 0) {
+                wrapper.classList.add('hidden');
+                return;
+            }
+            wrapper.classList.remove('hidden');
+            container.innerHTML = postersData.map(p => `
+                <div class="w-full shrink-0 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="max-w-lg">
+                        <span class="bg-primary-600/30 text-cyan-300 text-[11px] font-bold px-3 py-1 rounded-full">ประกาศแนะนำ</span>
+                        <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight mt-3 mb-2 text-white">${p.title}</h2>
+                        <p class="text-xs md:text-sm text-slate-300 leading-relaxed mb-4">${p.description}</p>
+                    </div>
+                    <div class="w-full md:w-80 h-48 md:h-52 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 shrink-0">
+                        <img src="${p.imageUrl}" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600'" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            `).join('');
+            dotsContainer.innerHTML = postersData.map((_, i) => `<button onclick="currentSlide(${i})" class="w-3 h-3 rounded-full transition ${i === currentSlideIndex ? 'bg-primary-500' : 'bg-slate-700'}"></button>`).join('');
+        }
+        function showSlide(index) { currentSlideIndex = index % postersData.length; document.getElementById('sliderContainer').style.transform = `translateX(-${currentSlideIndex * 100}%)`; }
+        setInterval(() => { if (postersData.length > 1) { currentSlideIndex = (currentSlideIndex + 1) % postersData.length; showSlide(currentSlideIndex); } }, 6000);
+
+        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
+        function initRealtimeStats() {
+            document.getElementById('realtimeOnlineCount').innerText = '1';
+            document.getElementById('realtimeUsersCount').innerText = (JSON.parse(localStorage.getItem('jaysi_all_users')) || []).length;
+            document.getElementById('realtimeFilesCount').innerText = scriptsData.length;
+        }
+
+        function updateLogoUI() {
+            const logoImg = document.getElementById('brandLogoImg');
+            const logoIcon = document.getElementById('brandLogoIcon');
+            const favicon = document.getElementById('siteFavicon');
+            if (siteLogo && siteLogo.trim() !== '') {
+                logoImg.src = siteLogo.trim();
+                logoImg.classList.remove('hidden');
+                logoIcon.classList.add('hidden');
+                if (favicon) favicon.href = siteLogo.trim();
+            } else {
+                logoImg.classList.add('hidden');
+                logoIcon.classList.remove('hidden');
+                if (favicon) favicon.href = '';
+            }
+        }
+
+        function openBanModal() { document.getElementById('banModalContactBtn').href = unbanContactUrl; document.getElementById('banModal').classList.remove('hidden'); }
+        function closeBanModal() { document.getElementById('banModal').classList.add('hidden'); }
+        function logout() { currentUser = null; localStorage.removeItem('jaysi_user'); updateAuthUI(); showToast('ออกจากระบบเรียบร้อยแล้ว'); }
+        function updateAuthUI() {
+            const authSection = document.getElementById('authSection');
+            const userProfileMenu = document.getElementById('userProfileMenu');
+            const adminMenuLink = document.getElementById('adminMenuLink');
+            if (currentUser) {
+                currentUser.isAdmin = adminList.includes(currentUser.email);
+                authSection.classList.add('hidden');
+                userProfileMenu.classList.remove('hidden');
+                document.getElementById('navUserName').innerText = currentUser.name;
+                document.getElementById('navUserAvatar').src = currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+                document.getElementById('dropdownUserEmail').innerText = currentUser.email;
+                if (currentUser.isAdmin) adminMenuLink.classList.remove('hidden');
+                else adminMenuLink.classList.add('hidden');
+            } else { authSection.classList.remove('hidden'); userProfileMenu.classList.add('hidden'); }
+        }
+        function toggleUserDropdown() { document.getElementById('dropdownContent').classList.toggle('hidden'); }
+
+        let currentFilter = 'all'; let searchQuery = '';
+        function renderScripts() {
+            const grid = document.getElementById('scriptGrid');
+            const emptyState = document.getElementById('emptyState');
+            let filtered = scriptsData.filter(item => (currentFilter === 'all' || item.category === currentFilter) && (item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.description.toLowerCase().includes(searchQuery.toLowerCase())));
+            document.getElementById('itemCount').innerText = filtered.length;
+            if (filtered.length === 0) { grid.innerHTML = ''; emptyState.classList.remove('hidden'); return; }
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(item => {
+                const isRoblox = item.category.toLowerCase().includes('roblox');
+                const btnAction = isRoblox ? `openRobloxModal(${item.id})` : `downloadScript(${item.id})`;
+                const posterHtml = item.posterUrl ? `<img src="${item.posterUrl}" onerror="this.style.display='none'" class="w-full h-36 object-cover rounded-2xl mb-4 border border-slate-800">` : '';
+                return `
+                    <div class="bg-slate-900/90 backdrop-blur capsule-card p-6 border border-slate-800 shadow-xl flex flex-col justify-between group">
+                        <div>${posterHtml}<span class="text-[11px] font-semibold px-3 py-1 bg-slate-800 text-slate-300 rounded-full">${item.category}</span><h3 class="text-base font-bold text-slate-100 mt-3 mb-2">${item.title}</h3><p class="text-slate-400 text-xs mb-4 line-clamp-2">${item.description}</p></div>
+                        <div><div class="flex items-center justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-800 mb-3"><span>ผู้ลง: ${item.author || 'Admin'}</span><span>ยอดใช้: ${item.downloads} ครั้ง</span></div><button onclick="${btnAction}" class="w-full py-2.5 bg-primary-600/20 hover:bg-primary-600 text-primary-400 hover:text-white text-xs font-semibold rounded-full transition flex items-center justify-center space-x-2 border border-primary-500/30"><i class="fa-solid ${isRoblox ? 'fa-copy' : 'fa-cloud-arrow-down'}"></i><span>${isRoblox ? 'คัดลอกสคริปต์ Roblox' : 'ดาวน์โหลดไฟล์'}</span></button></div>
+                    </div>
+                `;
+            }).join('');
+        }
+        function filterCategory(cat) { currentFilter = cat; renderCategoriesUI(); renderScripts(); }
+        function handleSearch(q) { searchQuery = q; renderScripts(); }
+        function resetFilter() { currentFilter = 'all'; searchQuery = ''; document.getElementById('searchInput').value = ''; renderCategoriesUI(); renderScripts(); }
+
+        function openRobloxModal(id) {
+            const script = scriptsData.find(s => s.id === id);
+            if (!script) return;
+            script.downloads += 1; localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
+            document.getElementById('robloxModalTitle').innerText = script.title;
+            document.getElementById('robloxScriptCode').value = script.scriptCode || script.downloadUrl || 'print("No Code")';
+            document.getElementById('robloxModal').classList.remove('hidden'); renderScripts();
+        }
+        function closeRobloxModal() { document.getElementById('robloxModal').classList.add('hidden'); }
+        function copyRobloxScript() { navigator.clipboard.writeText(document.getElementById('robloxScriptCode').value); showToast('คัดลอกสคริปต์สำเร็จ'); }
+        function downloadScript(id) {
+            const script = scriptsData.find(s => s.id === id);
+            if (!script) return;
+            script.downloads += 1; localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
+            downloadHistory.unshift({ id: Date.now(), title: script.title, category: script.category, date: new Date().toLocaleDateString('th-TH') });
+            localStorage.setItem('jaysi_history', JSON.stringify(downloadHistory));
+            renderScripts(); showToast(`กำลังดาวน์โหลด "${script.title}"`);
+            if (script.fileData) { const a = document.createElement('a'); a.href = script.fileData; a.download = script.fileName || 'file'; a.click(); }
+            else if (script.downloadUrl) { window.open(script.downloadUrl, '_blank'); }
+        }
+
+        function copyIconCode(iconClass) {
+            navigator.clipboard.writeText(iconClass);
+            showToast(`คัดลอกรหัสไอคอน "${iconClass}" สำเร็จ`);
+        }
+
+        function filterIconPalette(query) {
+            const grid = document.getElementById('iconPaletteGrid');
+            if (!grid) return;
+            const q = query.toLowerCase();
+            const filtered = masterIconList.filter(ic => ic.toLowerCase().includes(q));
+            grid.innerHTML = filtered.map(ic => `
+                <button type="button" onclick="copyIconCode('${ic}')" title="${ic}" class="p-2 bg-slate-900 hover:bg-primary-600 hover:text-white rounded-xl border border-slate-800 text-slate-300 flex items-center justify-center transition text-sm">
+                    <i class="fa-solid ${ic}"></i>
+                </button>
+            `).join('');
+        }
+
+        function filterAdminUsers(query) {
+            const q = query.toLowerCase();
+            const container = document.getElementById('adminUsersListContainer');
+            if (!container) return;
+            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
+            let filtered = allUsers.filter(u => (u.name && u.name.toLowerCase().includes(q)) || (u.email && u.email.toLowerCase().includes(q)) || (u.myId && u.myId.toLowerCase().includes(q)));
+            container.innerHTML = generateAdminUsersHtml(filtered);
+        }
+
+        function generateAdminUsersHtml(usersList) {
+            if (usersList.length === 0) return '<p class="text-xs text-slate-400 text-center py-4">ไม่พบรายชื่อผู้ใช้งานที่ค้นหา</p>';
+            return usersList.map(u => {
+                const isSuper = u.email === SUPER_ADMIN_EMAIL;
+                const isAdmin = adminList.includes(u.email);
+                const userName = SecurityShield.sanitize(u.name || 'ไม่มีชื่อ');
+                const userEmail = SecurityShield.sanitize(u.email || 'ไม่มีอีเมล');
+                const userMyId = SecurityShield.sanitize(u.myId || 'JAY-XXXXXX');
+                const userAvatar = u.avatar && u.avatar.trim() !== '' ? u.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+
+                return `
+                    <div onclick="openUserDetailModal('${u.email}')" class="p-3 bg-slate-900 hover:bg-slate-850 rounded-2xl flex items-center justify-between border border-slate-800 cursor-pointer transition group">
+                        <div class="flex items-center space-x-3 truncate pr-2">
+                            <img src="${userAvatar}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'" class="w-9 h-9 rounded-full object-cover shrink-0 shadow">
+                            <div class="truncate">
+                                <h6 class="text-xs font-bold text-slate-100 group-hover:text-primary-400 transition truncate">${userName} <span class="text-[10px] text-primary-400">(${userMyId})</span></h6>
+                                <p class="text-[10px] text-slate-400 truncate">${userEmail}</p>
+                                <p class="text-[10px] text-slate-500">${isSuper ? 'ซูเปอร์แอดมินหลัก' : (isAdmin ? 'แอดมิน' : 'สมาชิกทั่วไป')} ${u.isBanned ? '• (แบน)' : ''}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1.5 bg-primary-600/20 text-primary-300 rounded-xl text-[10px] font-semibold transition shrink-0">จัดการ</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openUserDetailModal(email) {
+            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
+            let user = allUsers.find(u => u.email === email);
+            if (!user) return;
+            const isSuper = user.email === SUPER_ADMIN_EMAIL;
+            const isAdmin = adminList.includes(user.email);
+            const userAvatar = user.avatar && user.avatar.trim() !== '' ? user.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+
+            document.getElementById('detailUserAvatar').src = userAvatar;
+            document.getElementById('detailUserName').innerText = user.name || 'ไม่มีชื่อ';
+            document.getElementById('detailUserEmail').innerText = user.email || 'ไม่มีอีเมล';
+            document.getElementById('detailUserMyId').innerText = user.myId || 'JAY-000000';
+
+            const roleBadge = document.getElementById('detailUserRoleBadge');
+            roleBadge.innerText = isSuper ? 'ซูเปอร์แอดมินหลัก' : (isAdmin ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิกทั่วไป');
+
+            const banBadge = document.getElementById('detailUserBanBadge');
+            banBadge.innerText = user.isBanned ? 'ถูกระงับการใช้งาน (Banned)' : 'สถานะปกติ';
+
+            const actionContainer = document.getElementById('detailUserActionButtons');
+            if (isSuper) {
+                actionContainer.innerHTML = `<div class="p-3 bg-primary-500/10 text-primary-300 text-center rounded-xl text-xs font-semibold">🛡️ ซูเปอร์แอดมินหลัก (ป้องกันสูงสุด)</div>`;
+            } else {
+                actionContainer.innerHTML = `
+                    <button onclick="toggleAdminRoleFromModal('${user.email}')" class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition ${isAdmin ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-800 text-slate-200'}">${isAdmin ? '🛡️ ถอดสิทธิ์แอดมิน' : '👑 ให้สิทธิ์แอดมิน'}</button>
+                    <button onclick="toggleBanUserFromModal('${user.email}')" class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition ${user.isBanned ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}">${user.isBanned ? '✅ ปลดแบนบัญชี' : '⛔ ระงับการใช้งาน (แบน)'}</button>
+                `;
+            }
+            document.getElementById('userManagementDetailModal').classList.remove('hidden');
+        }
+        function closeUserDetailModal() { document.getElementById('userManagementDetailModal').classList.add('hidden'); }
+        function toggleAdminRoleFromModal(email) { toggleAdminRole(email); openUserDetailModal(email); openProfileModal('admin'); }
+        function toggleBanUserFromModal(email) { toggleBanUser(email); openUserDetailModal(email); openProfileModal('admin'); }
+
+        function handleAddContactSubmit(e) {
+            e.preventDefault();
+            const name = SecurityShield.sanitize(document.getElementById('adminContactName').value.trim());
+            const icon = SecurityShield.sanitize(document.getElementById('adminContactIcon').value.trim() || 'fa-discord');
+            const url = document.getElementById('adminContactUrl').value.trim();
+            const desc = SecurityShield.sanitize(document.getElementById('adminContactDesc').value.trim());
+            const colorClass = SecurityShield.sanitize(document.getElementById('adminContactColor').value.trim() || 'text-primary-400');
+            if (!name || !url) return;
+            contactsData.push({ id: Date.now(), name, icon, url, desc, colorClass });
+            localStorage.setItem('jaysi_contacts', JSON.stringify(contactsData));
+            document.getElementById('addContactForm').reset();
+            renderContactsUI(); openProfileModal('admin'); showToast('เพิ่มช่องทางติดต่อสำเร็จ');
+        }
+        function deleteContact(id) {
+            contactsData = contactsData.filter(c => c.id !== id);
+            localStorage.setItem('jaysi_contacts', JSON.stringify(contactsData));
+            renderContactsUI(); openProfileModal('admin'); showToast('ลบช่องทางติดต่อแล้ว');
+        }
+
+        function handleAddAnnouncement(e) {
+            e.preventDefault();
+            const text = SecurityShield.sanitize(document.getElementById('adminAnnounceText').value.trim());
+            const icon = SecurityShield.sanitize(document.getElementById('adminAnnounceIcon').value.trim() || 'fa-bullhorn');
+            if (!text) return;
+            announcementsData.push({ id: Date.now(), text, icon });
+            localStorage.setItem('jaysi_announcements', JSON.stringify(announcementsData));
+            document.getElementById('addAnnouncementForm').reset();
+            renderAnnouncements(); openProfileModal('admin'); showToast('สร้างประกาศใหม่สำเร็จ');
+        }
+        function deleteAnnouncement(id) {
+            announcementsData = announcementsData.filter(a => a.id !== id);
+            localStorage.setItem('jaysi_announcements', JSON.stringify(announcementsData));
+            renderAnnouncements(); openProfileModal('admin'); showToast('ลบประกาศแล้ว');
+        }
+
+        function handleAddCategorySubmit(e) {
+            e.preventDefault();
+            const catName = SecurityShield.sanitize(document.getElementById('newCategoryInput').value.trim());
+            const catIcon = SecurityShield.sanitize(document.getElementById('newCategoryIcon').value.trim() || 'fa-folder');
+            if (!catName) return;
+            if (categoriesData.some(c => c.name === catName)) { showToast('หมวดหมู่นี้มีอยู่แล้ว'); return; }
+            categoriesData.push({ name: catName, icon: catIcon });
+            localStorage.setItem('jaysi_categories', JSON.stringify(categoriesData));
+            document.getElementById('addCategoryForm').reset();
+            renderCategoriesUI(); openProfileModal('admin'); showToast('เพิ่มหมวดหมู่สำเร็จ');
+        }
+        function deleteCategory(catName) {
+            if (categoriesData.length <= 1) { showToast('ต้องมีหมวดรู้อย่างน้อย 1 หมวดหมู่'); return; }
+            categoriesData = categoriesData.filter(c => c.name !== catName);
+            localStorage.setItem('jaysi_categories', JSON.stringify(categoriesData));
+            if (currentFilter === catName) currentFilter = 'all';
+            renderCategoriesUI(); openProfileModal('admin'); showToast('ลบหมวดหมู่แล้ว');
+        }
+
+        function handleUploadSubmit(e) {
+            e.preventDefault();
+            const title = SecurityShield.sanitize(document.getElementById('adminScriptTitle').value);
+            const category = SecurityShield.sanitize(document.getElementById('adminScriptCategory').value);
+            const urlOrCode = document.getElementById('adminScriptUrl').value;
+            const posterUrl = document.getElementById('adminScriptPoster').value.trim();
+            const description = SecurityShield.sanitize(document.getElementById('adminScriptDesc').value);
+            const fileInput = document.getElementById('adminLocalFile');
+
+            let newScript = { id: Date.now(), title, category, description, downloads: 0, author: currentUser.name, posterUrl, tags: ['Free', category] };
+            if (category.toLowerCase().includes('roblox')) {
+                newScript.scriptCode = urlOrCode;
+            } else if (fileInput && fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    newScript.fileData = uploadEvent.target.result;
+                    newScript.fileName = fileInput.files[0].name;
+                    finalizeUpload(newScript);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+                return;
+            } else { newScript.downloadUrl = urlOrCode; }
+            finalizeUpload(newScript);
+        }
+        function finalizeUpload(newScript) {
+            scriptsData.unshift(newScript);
+            localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
+            document.getElementById('uploadScriptForm').reset();
+            renderScripts(); openProfileModal('admin'); showToast('อัปโหลดไฟล์สำเร็จ');
+        }
+
+        function handleAddPosterSubmit(e) {
+            e.preventDefault();
+            const title = SecurityShield.sanitize(document.getElementById('adminPosterTitle').value);
+            const description = SecurityShield.sanitize(document.getElementById('adminPosterDesc').value);
+            const imageUrl = document.getElementById('adminPosterImgUrl').value.trim();
+            const categoryFilter = SecurityShield.sanitize(document.getElementById('adminPosterCat').value);
+            postersData.push({ id: Date.now(), title, description, imageUrl, categoryFilter });
+            localStorage.setItem('jaysi_posters', JSON.stringify(postersData));
+            document.getElementById('addPosterForm').reset();
+            renderPostersSlider(); openProfileModal('admin'); showToast('เพิ่มโปสเตอร์สำเร็จ');
+        }
+        function deletePoster(id) {
+            postersData = postersData.filter(p => p.id !== id);
+            localStorage.setItem('jaysi_posters', JSON.stringify(postersData));
+            renderPostersSlider(); openProfileModal('admin'); showToast('ลบโปสเตอร์แล้ว');
+        }
+
+        function openProfileModal(tab = 'info') {
+            if (!currentUser) { openGoogleOAuthModal(); return; }
+            document.getElementById('modalUserName').innerText = currentUser.name;
+            document.getElementById('modalUserEmail').innerText = currentUser.email;
+            document.getElementById('modalUserAvatar').src = currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+            const adminTabBtn = document.getElementById('tabAdminBtn');
+            const themeTabBtn = document.getElementById('tabThemeBtn');
+            if (currentUser.isAdmin) {
+                adminTabBtn.classList.remove('hidden');
+                themeTabBtn.classList.remove('hidden');
+            } else {
+                adminTabBtn.classList.add('hidden');
+                themeTabBtn.classList.add('hidden');
+            }
+            switchProfileTab(tab);
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+
+        function switchProfileTab(tab) {
+            const infoBtn = document.getElementById('tabInfoBtn');
+            const historyBtn = document.getElementById('tabHistoryBtn');
+            const themeBtn = document.getElementById('tabThemeBtn');
+            const adminBtn = document.getElementById('tabAdminBtn');
+
+            infoBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition";
+            historyBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition";
+            if(themeBtn) themeBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition";
+            if(adminBtn) adminBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 transition";
+
+            const contentArea = document.getElementById('modalContentArea');
+
+            if (tab === 'info') {
+                infoBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-primary-600 text-white transition";
+                contentArea.innerHTML = `
+                    <div class="bg-slate-950 p-5 rounded-3xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center pb-3 border-b border-slate-800"><span class="text-xs text-slate-400">My ID</span><span class="text-xs font-bold text-primary-400">${currentUser.myId}</span></div>
+                        <div class="flex justify-between items-center pb-3 border-b border-slate-800"><span class="text-xs text-slate-400">ชื่อ</span><span class="text-xs font-bold text-slate-200">${currentUser.name}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-slate-400">อีเมล</span><span class="text-xs text-slate-300">${currentUser.email}</span></div>
+                    </div>
+                `;
+            } else if (tab === 'history') {
+                historyBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-primary-600 text-white transition";
+                contentArea.innerHTML = downloadHistory.length === 0 ? '<p class="text-center text-xs text-slate-400 py-6">ยังไม่มีประวัติ</p>' : downloadHistory.map(h => `<div class="p-3 bg-slate-950 rounded-2xl flex justify-between items-center border border-slate-800"><span class="text-xs font-bold text-slate-200">${h.title}</span><span class="text-[10px] text-emerald-400">${h.date}</span></div>`).join('');
+            } else if (tab === 'theme' && currentUser.isAdmin) {
+                themeBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-indigo-600 text-white transition";
+                let currentTheme = JSON.parse(localStorage.getItem('jaysi_custom_theme')) || { bgColor: '#030712', primaryColor: '#0085ff', cardRadius: '28px' };
+                contentArea.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4">
+                            <h4 class="text-sm font-bold text-indigo-400"><i class="fa-solid fa-palette mr-2"></i>ระบบแต่งกราฟฟิก & ดีไซน์หน้าเว็บ</h4>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">ลิงก์โลโก้เว็บไซต์ (Logo URL):</label>
+                                <input type="text" id="themeLogoInput" value="${siteLogo}" placeholder="วางลิงก์รูปภาพโลโก้..." class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="block text-xs font-semibold text-slate-300 mb-1.5">สีพื้นหลังเว็บไซต์:</label><input type="color" id="themeBgColor" value="${currentTheme.bgColor}" class="w-12 h-10 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer"></div>
+                                <div><label class="block text-xs font-semibold text-slate-300 mb-1.5">สีหลักปุ่ม & ไฮไลต์:</label><input type="color" id="themePrimaryColor" value="${currentTheme.primaryColor}" class="w-12 h-10 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2"><label class="block text-xs font-semibold text-slate-300 mb-1.5">ความโค้งมนการ์ด:</label><select id="themeCardRadius" class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none"><option value="12px" ${currentTheme.cardRadius === '12px' ? 'selected' : ''}>12px</option><option value="24px" ${currentTheme.cardRadius === '24px' ? 'selected' : ''}>24px</option><option value="28px" ${currentTheme.cardRadius === '28px' ? 'selected' : ''}>28px</option><option value="40px" ${currentTheme.cardRadius === '40px' ? 'selected' : ''}>40px</option></select></div>
+                            </div>
+                            <div class="pt-2 flex gap-3">
+                                <button onclick="saveCustomTheme()" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-semibold transition">บันทึกดีไซน์</button>
+                                <button onclick="resetCustomTheme()" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl text-xs font-semibold transition">รีเซ็ตค่าเริ่มต้น</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (tab === 'admin' && currentUser.isAdmin) {
+                adminBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-amber-500 text-white transition";
+                let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
+                let categoryOptionsHtml = categoriesData.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                let initialIconsHtml = masterIconList.map(ic => `
+                    <button type="button" onclick="copyIconCode('${ic}')" title="${ic}" class="p-2 bg-slate-900 hover:bg-primary-600 hover:text-white rounded-xl border border-slate-800 text-slate-300 flex items-center justify-center transition text-sm">
+                        <i class="fa-solid ${ic}"></i>
+                    </button>
+                `).join('');
+
+                contentArea.innerHTML = `
+                    <div class="space-y-4">
+                        <!-- Icon Library Palette -->
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-cyan-400 mb-2"><i class="fa-solid fa-icons mr-2"></i>คลังไอคอน FontAwesome (คลิกเพื่อคัดลอกรหัส)</h4>
+                            <input type="text" oninput="filterIconPalette(this.value)" placeholder="พิมพ์ค้นหาชื่อไอคอน..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none mb-2">
+                            <div id="iconPaletteGrid" class="grid grid-cols-8 sm:grid-cols-10 gap-2 h-36 overflow-y-auto p-2 bg-slate-900/50 rounded-xl border border-slate-800">
+                                ${initialIconsHtml}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-rose-400 mb-2"><i class="fa-solid fa-link mr-2"></i>ลิงก์ติดต่อขอปลดแบน</h4>
+                            <div class="flex gap-2">
+                                <input type="text" id="adminUnbanUrlInput" value="${unbanContactUrl}" placeholder="วางลิงก์ติดต่อ..." class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <button onclick="saveAdminUnbanUrl()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">บันทึก</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-pink-400 mb-3"><i class="fa-solid fa-headset mr-2"></i>ช่องทางติดต่อ & คอมมูนิตี้</h4>
+                            <form id="addContactForm" onsubmit="handleAddContactSubmit(event)" class="space-y-2 mb-4">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="adminContactName" required placeholder="ชื่อ (เช่น Discord)" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                    <input type="text" id="adminContactIcon" placeholder="ไอคอน (fa-discord)" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none" value="fa-discord">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="adminContactUrl" required placeholder="URL ลิงก์..." class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                    <input type="text" id="adminContactColor" placeholder="สีไอคอน (text-[#5865F2])" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none" value="text-[#5865F2]">
+                                </div>
+                                <input type="text" id="adminContactDesc" placeholder="คำอธิบายสั้นๆ..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <button type="submit" class="w-full py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-semibold transition">เพิ่มช่องทางติดต่อ</button>
+                            </form>
+                            <div class="space-y-2 max-h-36 overflow-y-auto">
+                                ${contactsData.map(c => `
+                                    <div class="p-2.5 bg-slate-900 rounded-xl flex justify-between items-center border border-slate-800">
+                                        <span class="text-xs text-slate-200 truncate pr-2">${c.name} (${c.url})</span>
+                                        <button onclick="deleteContact(${c.id})" class="bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition">ลบ</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-amber-400 mb-3"><i class="fa-solid fa-bullhorn mr-2"></i>ข้อความประกาศ</h4>
+                            <form id="addAnnouncementForm" onsubmit="handleAddAnnouncement(event)" class="space-y-2 mb-3">
+                                <input type="text" id="adminAnnounceText" required placeholder="ข้อความประกาศ..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <input type="text" id="adminAnnounceIcon" placeholder="ไอคอน (fa-bullhorn)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none" value="fa-bullhorn">
+                                <button type="submit" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold transition">สร้างประกาศ</button>
+                            </form>
+                            <div class="space-y-2 max-h-32 overflow-y-auto">
+                                ${announcementsData.map(a => `
+                                    <div class="p-2 bg-slate-900 rounded-xl flex justify-between items-center border border-slate-800">
+                                        <span class="text-xs text-slate-200 truncate pr-2">${a.text}</span>
+                                        <button onclick="deleteAnnouncement(${a.id})" class="bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[10px] font-semibold">ลบ</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-purple-400 mb-3"><i class="fa-solid fa-folder-tree mr-2"></i>จัดการหมวดหมู่</h4>
+                            <form id="addCategoryForm" onsubmit="handleAddCategorySubmit(event)" class="flex gap-2 mb-3">
+                                <input type="text" id="newCategoryInput" required placeholder="ชื่อหมวดหมู่..." class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <input type="text" id="newCategoryIcon" placeholder="ไอคอน" class="w-28 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none" value="fa-folder">
+                                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">เพิ่ม</button>
+                            </form>
+                            <div class="flex flex-wrap gap-2">
+                                ${categoriesData.map(c => `
+                                    <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl flex items-center space-x-2 text-xs text-slate-200">
+                                        <i class="fa-solid ${c.icon || 'fa-folder'} text-indigo-400"></i>
+                                        <span>${c.name}</span>
+                                        <button onclick="deleteCategory('${c.name}')" class="text-rose-400 hover:text-rose-600 font-bold ml-1"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-cyan-400 mb-3"><i class="fa-solid fa-images mr-2"></i>จัดการโปสเตอร์สไลด์</h4>
+                            <form id="addPosterForm" onsubmit="handleAddPosterSubmit(event)" class="space-y-2 mb-4">
+                                <input type="text" id="adminPosterTitle" required placeholder="หัวข้อโปสเตอร์..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <input type="text" id="adminPosterImgUrl" required placeholder="URL รูปภาพ..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <input type="text" id="adminPosterCat" placeholder="หมวดหมู่ (หรือ all)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <textarea id="adminPosterDesc" rows="2" required placeholder="รายละเอียด..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none"></textarea>
+                                <button type="submit" class="w-full py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-semibold transition">เพิ่มโปสเตอร์</button>
+                            </form>
+                            <div class="space-y-2 max-h-32 overflow-y-auto">
+                                ${postersData.map(p => `
+                                    <div class="p-2 bg-slate-900 rounded-xl flex justify-between items-center border border-slate-800">
+                                        <span class="text-xs text-slate-200 truncate pr-2">${p.title}</span>
+                                        <button onclick="deletePoster(${p.id})" class="bg-rose-500/20 text-rose-400 px-2 py-1 rounded-lg text-[10px] font-semibold transition">ลบ</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-emerald-400 mb-3"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>เพิ่มไฟล์หรือสคริปต์ใหม่</h4>
+                            <form id="uploadScriptForm" onsubmit="handleUploadSubmit(event)" class="space-y-3">
+                                <input type="text" id="adminScriptTitle" required placeholder="ชื่อไฟล์ / ชื่อสคริปต์" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <select id="adminScriptCategory" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">${categoryOptionsHtml}</select>
+                                    <input type="text" id="adminScriptUrl" placeholder="URL ลิงก์ดาวน์โหลด..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1">หรือเลือกอัปโหลดไฟล์จากเครื่อง:</label>
+                                    <input type="file" id="adminLocalFile" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary-600 file:text-white">
+                                </div>
+                                <input type="text" id="adminScriptPoster" placeholder="URL รูปภาพโปสเตอร์การ์ด (ไม่ใส่ก็ได้)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                <textarea id="adminScriptDesc" rows="2" required placeholder="รายละเอียดไฟล์..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none"></textarea>
+                                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition">อัปโหลดไฟล์ลงระบบ</button>
+                            </form>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
+                                <h4 class="text-xs font-bold text-blue-400"><i class="fa-solid fa-users-gear mr-2"></i>จัดการผู้ใช้งานทั้งหมด (${allUsers.length})</h4>
+                                <div class="relative w-full sm:w-48">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass text-[10px]"></i></span>
+                                    <input type="text" oninput="filterAdminUsers(this.value)" placeholder="ค้นหาผู้ใช้..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-[11px] text-slate-100 outline-none">
+                                </div>
+                            </div>
+                            <div id="adminUsersListContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                ${generateAdminUsersHtml(allUsers)}
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
+                            <h4 class="text-xs font-bold text-slate-200 mb-3"><i class="fa-solid fa-folder-tree mr-2"></i>จัดการหรือลบไฟล์ (${scriptsData.length})</h4>
+                            <div class="space-y-2 max-h-36 overflow-y-auto pr-1">
+                                ${scriptsData.map(s => `
+                                    <div class="p-2.5 bg-slate-900 rounded-xl flex justify-between items-center border border-slate-800">
+                                        <span class="text-xs text-slate-200 truncate pr-2">${s.title}</span>
+                                        <button onclick="adminDeleteScript(${s.id})" class="bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition">ลบ</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function saveCustomTheme() {
+            const logoVal = document.getElementById('themeLogoInput').value.trim();
+            siteLogo = logoVal;
+            localStorage.setItem('jaysi_logo', siteLogo);
+            updateLogoUI();
+
+            const theme = {
+                bgColor: document.getElementById('themeBgColor').value,
+                primaryColor: document.getElementById('themePrimaryColor').value,
+                cardRadius: document.getElementById('themeCardRadius').value
+            };
+            localStorage.setItem('jaysi_custom_theme', JSON.stringify(theme));
+            applyCustomTheme();
+            showToast('บันทึกและอัปเดตดีไซน์เว็บไซต์สำเร็จ!');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+
+        function resetCustomTheme() {
+            localStorage.removeItem('jaysi_custom_theme');
+            localStorage.removeItem('jaysi_logo');
+            siteLogo = '';
+            updateLogoUI();
+            applyCustomTheme();
+            showToast('รีเซ็ตดีไซน์และโลโก้เป็นค่าเริ่มต้นแล้ว');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+
+        function toggleAdminRole(email) {
+            if (email === SUPER_ADMIN_EMAIL) { showToast('ไม่สามารถเปลี่ยนสิทธิ์ซูเปอร์แอดมินหลักได้'); return; }
+            if (adminList.includes(email)) {
+                adminList = adminList.filter(e => e !== email);
+                showToast(`ถอดสิทธิ์แอดมินจาก ${email} แล้ว`);
+            } else {
+                adminList.push(email);
+                showToast(`ให้สิทธิ์แอดมินแก่ ${email} แล้ว`);
+            }
+            localStorage.setItem('jaysi_admins', JSON.stringify(adminList));
+            openProfileModal('admin');
+        }
+
+        function toggleBanUser(email) {
+            if (email === SUPER_ADMIN_EMAIL) { showToast('ไม่สามารถแบนซูเปอร์แอดมินหลักได้'); return; }
+            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
+            let u = allUsers.find(item => item.email === email);
+            if (u) {
+                u.isBanned = !u.isBanned;
+                localStorage.setItem('jaysi_all_users', JSON.stringify(allUsers));
+                openProfileModal('admin');
+                showToast(u.isBanned ? `แบนผู้ใช้ ${email} แล้ว` : `ปลดแบนผู้ใช้ ${email} แล้ว`);
+            }
+        }
+
+        function saveAdminUnbanUrl() {
+            const val = document.getElementById('adminUnbanUrlInput').value.trim();
+            unbanContactUrl = val || 'https://discord.gg/';
+            localStorage.setItem('jaysi_unban_url', unbanContactUrl);
+            showToast('บันทึกลิงก์ปลดแบนสำเร็จ');
+        }
+
+        function adminDeleteScript(id) {
+            scriptsData = scriptsData.filter(s => s.id !== id);
+            localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
+            renderScripts(); openProfileModal('admin'); showToast('ลบไฟล์เรียบร้อยแล้ว');
+        }
+
+        function showToast(msg, type = 'emerald') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto bg-white text-slate-900 px-5 py-3 rounded-2xl shadow-2xl text-xs font-medium flex flex-col space-y-2 toast-slide border border-slate-200 w-80 relative overflow-hidden';
+            toast.innerHTML = `<div class="flex items-center space-x-2"><i class="fa-solid ${type === 'rose' ? 'fa-triangle-exclamation text-rose-500' : 'fa-circle-check text-emerald-500'} text-sm"></i><span class="flex-1 font-semibold">${msg}</span></div><div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden"><div id="toastProgressBar" class="bg-emerald-500 h-full w-full transition-all duration-[3000ms] ease-linear"></div></div>`;
+            container.appendChild(toast);
+            setTimeout(() => { const bar = toast.querySelector('#toastProgressBar'); if(bar) bar.style.width = '0%'; }, 50);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(50px)'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>
