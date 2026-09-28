@@ -1097,5 +1097,50 @@
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(50px)'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
     </script>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBnBNLcmNH8XQvyeb5a_eOEuLsNfz9h2pU",
+    authDomain: "jaysi-bd6fc.firebaseapp.com",
+    projectId: "jaysi-bd6fc",
+    storageBucket: "jaysi-bd6fc.firebasestorage.app",
+    messagingSenderId: "11493759829",
+    appId: "1:11493759829:web:6638eed155d75a3576eddc",
+    measurementId: "G-CWCJ7KTFJ4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ดึงข้อมูลแบบ Real-time มาแสดงผลแทน localStorage เดิม
+  onSnapshot(collection(db, "scripts"), (snapshot) => {
+    window.scriptsData = [];
+    snapshot.forEach((docSnap) => {
+      window.scriptsData.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    
+    // เรียกฟังก์ชัน render หน้าจอของคุณตรงนี้ (เช่น renderScripts())
+    if (typeof renderScripts === 'function') {
+      renderScripts();
+    }
+  });
+
+  // ฟังก์ชันลบข้อมูลผ่าน Firebase
+  window.firebaseDeleteScript = async function(scriptId) {
+    await deleteDoc(doc(db, "scripts", scriptId));
+  };
+
+  // ฟังก์ชันเพิ่มข้อมูลผ่าน Firebase
+  window.firebaseAddScript = async function(title, code, author) {
+    await addDoc(collection(db, "scripts"), {
+      title: title,
+      code: code,
+      author: author,
+      createdAt: new Date()
+    });
+  };
+    </script>
 </body>
 </html>
