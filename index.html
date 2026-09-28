@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JAYSI</title>
     
-    <!-- Open Graph Meta Tags สำหรับควบคุมรูปและข้อความเวลาแชร์ลิงก์ (แก้ไขให้เปลี่ยนตามโลโก้เว็บแบบเรียลไทม์)[span_5](start_span)[span_5](end_span)[span_6](start_span)[span_6](end_span) -->
+    <!-- Open Graph Meta Tags สำหรับควบคุมรูปและข้อความเวลาแชร์ลิงก์ (แก้ไขให้เปลี่ยนตามโลโก้เว็บแบบเรียลไทม์)[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span) -->
     <meta property="og:title" content="JAYSI - แหล่งรวมสคริปต์และไฟล์แจกฟรี 100%">
     <meta property="og:description" content="แหล่งรวมสคริปต์และไฟล์แจกฟรี 100% อัปเดตใหม่ทุกวัน">
     <meta property="og:image" id="ogImageMeta" content="">
@@ -524,7 +524,7 @@
             document.getElementById('realtimeFilesCount').innerText = scriptsData.length;
         }
 
-        // ฟังก์ชันอัปเดตโลโก้ หน้าเว็บ และ Open Graph Meta Tags แบบเรียลไทม์[span_7](start_span)[span_7](end_span)[span_8](start_span)[span_8](end_span)
+        // ฟังก์ชันอัปเดตโลโก้ หน้าเว็บ และ Open Graph Meta Tags แบบเรียลไทม์[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span)
         function updateLogoUI() {
             const logoImg = document.getElementById('brandLogoImg');
             const logoIcon = document.getElementById('brandLogoIcon');
@@ -575,13 +575,13 @@
             if (filtered.length === 0) { grid.innerHTML = ''; emptyState.classList.remove('hidden'); return; }
             emptyState.classList.add('hidden');
             grid.innerHTML = filtered.map(item => {
-                const isRoblox = item.category.toLowerCase().includes('roblox');
-                const btnAction = isRoblox ? `openRobloxModal(${item.id})` : `downloadScript(${item.id})`;
+                const isRoblox = (item.category || '').toLowerCase().includes('roblox');
+                const btnAction = isRoblox ? `openRobloxModal('${item.id}')` : `downloadScript('${item.id}')`;
                 const posterHtml = item.posterUrl ? `<img src="${item.posterUrl}" onerror="this.style.display='none'" class="w-full h-36 object-cover rounded-2xl mb-4 border border-slate-800">` : '';
                 return `
                     <div class="bg-slate-900/90 backdrop-blur capsule-card p-6 border border-slate-800 shadow-xl flex flex-col justify-between group">
-                        <div>${posterHtml}<span class="text-[11px] font-semibold px-3 py-1 bg-slate-800 text-slate-300 rounded-full">${item.category}</span><h3 class="text-base font-bold text-slate-100 mt-3 mb-2">${item.title}</h3><p class="text-slate-400 text-xs mb-4 line-clamp-2">${item.description}</p></div>
-                        <div><div class="flex items-center justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-800 mb-3"><span>ผู้ลง: ${item.author || 'Admin'}</span><span>ยอดใช้: ${item.downloads} ครั้ง</span></div><button onclick="${btnAction}" class="w-full py-2.5 bg-primary-600/20 hover:bg-primary-600 text-primary-400 hover:text-white text-xs font-semibold rounded-full transition flex items-center justify-center space-x-2 border border-primary-500/30"><i class="fa-solid ${isRoblox ? 'fa-copy' : 'fa-cloud-arrow-down'}"></i><span>${isRoblox ? 'คัดลอกสคริปต์ Roblox' : 'ดาวน์โหลดไฟล์'}</span></button></div>
+                        <div>${posterHtml}<span class="text-[11px] font-semibold px-3 py-1 bg-slate-800 text-slate-300 rounded-full">${item.category || 'ทั่วไป'}</span><h3 class="text-base font-bold text-slate-100 mt-3 mb-2">${item.title}</h3><p class="text-slate-400 text-xs mb-4 line-clamp-2">${item.description || '-'}</p></div>
+                        <div><div class="flex items-center justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-800 mb-3"><span>ผู้ลง: ${item.author || 'Admin'}</span><span>ยอดใช้: ${item.downloads || 0} ครั้ง</span></div><button onclick="${btnAction}" class="w-full py-2.5 bg-primary-600/20 hover:bg-primary-600 text-primary-400 hover:text-white text-xs font-semibold rounded-full transition flex items-center justify-center space-x-2 border border-primary-500/30"><i class="fa-solid ${isRoblox ? 'fa-copy' : 'fa-cloud-arrow-down'}"></i><span>${isRoblox ? 'คัดลอกสคริปต์ Roblox' : 'ดาวน์โหลดไฟล์'}</span></button></div>
                     </div>
                 `;
             }).join('');
@@ -591,22 +591,20 @@
         function resetFilter() { currentFilter = 'all'; searchQuery = ''; document.getElementById('searchInput').value = ''; renderCategoriesUI(); renderScripts(); }
 
         function openRobloxModal(id) {
-            const script = scriptsData.find(s => s.id === id);
+            const script = scriptsData.find(s => s.id == id);
             if (!script) return;
-            script.downloads += 1; localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
             document.getElementById('robloxModalTitle').innerText = script.title;
-            document.getElementById('robloxScriptCode').value = script.scriptCode || script.downloadUrl || 'print("No Code")';
-            document.getElementById('robloxModal').classList.remove('hidden'); renderScripts();
+            document.getElementById('robloxScriptCode').value = script.scriptCode || script.code || script.downloadUrl || 'print("No Code")';
+            document.getElementById('robloxModal').classList.remove('hidden');
         }
         function closeRobloxModal() { document.getElementById('robloxModal').classList.add('hidden'); }
         function copyRobloxScript() { navigator.clipboard.writeText(document.getElementById('robloxScriptCode').value); showToast('คัดลอกสคริปต์สำเร็จ'); }
         function downloadScript(id) {
-            const script = scriptsData.find(s => s.id === id);
+            const script = scriptsData.find(s => s.id == id);
             if (!script) return;
-            script.downloads += 1; localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
             downloadHistory.unshift({ id: Date.now(), title: script.title, category: script.category, date: new Date().toLocaleDateString('th-TH') });
             localStorage.setItem('jaysi_history', JSON.stringify(downloadHistory));
-            renderScripts(); showToast(`กำลังดาวน์โหลด "${script.title}"`);
+            showToast(`กำลังดาวน์โหลด "${script.title}"`);
             if (script.fileData) { const a = document.createElement('a'); a.href = script.fileData; a.download = script.fileName || 'file'; a.click(); }
             else if (script.downloadUrl) { window.open(script.downloadUrl, '_blank'); }
         }
@@ -760,26 +758,25 @@
             const description = SecurityShield.sanitize(document.getElementById('adminScriptDesc').value);
             const fileInput = document.getElementById('adminLocalFile');
 
-            let newScript = { id: Date.now(), title, category, description, downloads: 0, author: currentUser.name, posterUrl, tags: ['Free', category] };
-            if (category.toLowerCase().includes('roblox')) {
-                newScript.scriptCode = urlOrCode;
-            } else if (fileInput && fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(uploadEvent) {
-                    newScript.fileData = uploadEvent.target.result;
-                    newScript.fileName = fileInput.files[0].name;
-                    finalizeUpload(newScript);
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-                return;
-            } else { newScript.downloadUrl = urlOrCode; }
-            finalizeUpload(newScript);
-        }
-        function finalizeUpload(newScript) {
-            scriptsData.unshift(newScript);
-            localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
-            document.getElementById('uploadScriptForm').reset();
-            renderScripts(); openProfileModal('admin'); showToast('อัปโหลดไฟล์สำเร็จ');
+            if (typeof window.firebaseAddScript === 'function') {
+                if (category.toLowerCase().includes('roblox')) {
+                    window.firebaseAddScript(title, category, urlOrCode, description, currentUser.name, posterUrl);
+                } else if (fileInput && fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(uploadEvent) {
+                        window.firebaseAddScript(title, category, uploadEvent.target.result, description, currentUser.name, posterUrl);
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                    return;
+                } else {
+                    window.firebaseAddScript(title, category, urlOrCode, description, currentUser.name, posterUrl);
+                }
+                document.getElementById('uploadScriptForm').reset();
+                openProfileModal('admin');
+                showToast('อัปโหลดไฟล์ขึ้น Firebase สำเร็จ');
+            } else {
+                showToast('ยังไม่ได้เชื่อมต่อ Firebase', 'rose');
+            }
         }
 
         function handleAddPosterSubmit(e) {
@@ -976,12 +973,12 @@
                         </div>
 
                         <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
-                            <h4 class="text-xs font-bold text-emerald-400 mb-3"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>เพิ่มไฟล์หรือสคริปต์ใหม่</h4>
+                            <h4 class="text-xs font-bold text-emerald-400 mb-3"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>เพิ่มไฟล์หรือสคริปต์ใหม่ (บันทึกลง Firebase)</h4>
                             <form id="uploadScriptForm" onsubmit="handleUploadSubmit(event)" class="space-y-3">
                                 <input type="text" id="adminScriptTitle" required placeholder="ชื่อไฟล์ / ชื่อสคริปต์" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
                                 <div class="grid grid-cols-2 gap-2">
                                     <select id="adminScriptCategory" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">${categoryOptionsHtml}</select>
-                                    <input type="text" id="adminScriptUrl" placeholder="URL ลิงก์ดาวน์โหลด..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
+                                    <input type="text" id="adminScriptUrl" placeholder="โค้ดสคริปต์ หรือ URL ลิงก์ดาวน์โหลด..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] text-slate-400 mb-1">หรือเลือกอัปโหลดไฟล์จากเครื่อง:</label>
@@ -989,7 +986,7 @@
                                 </div>
                                 <input type="text" id="adminScriptPoster" placeholder="URL รูปภาพโปสเตอร์การ์ด (ไม่ใส่ก็ได้)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none">
                                 <textarea id="adminScriptDesc" rows="2" required placeholder="รายละเอียดไฟล์..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none"></textarea>
-                                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition">อัปโหลดไฟล์ลงระบบ</button>
+                                <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition">อัปโหลดไฟล์ลงระบบ Firebase</button>
                             </form>
                         </div>
 
@@ -1007,12 +1004,12 @@
                         </div>
 
                         <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
-                            <h4 class="text-xs font-bold text-slate-200 mb-3"><i class="fa-solid fa-folder-tree mr-2"></i>จัดการหรือลบไฟล์ (${scriptsData.length})</h4>
+                            <h4 class="text-xs font-bold text-slate-200 mb-3"><i class="fa-solid fa-folder-tree mr-2"></i>จัดการหรือลบไฟล์บน Firebase (${scriptsData.length})</h4>
                             <div class="space-y-2 max-h-36 overflow-y-auto pr-1">
                                 ${scriptsData.map(s => `
                                     <div class="p-2.5 bg-slate-900 rounded-xl flex justify-between items-center border border-slate-800">
                                         <span class="text-xs text-slate-200 truncate pr-2">${s.title}</span>
-                                        <button onclick="adminDeleteScript(${s.id})" class="bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition">ลบ</button>
+                                        <button onclick="firebaseDeleteScript('${s.id}')" class="bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition">ลบจาก Firebase</button>
                                     </div>
                                 `).join('')}
                             </div>
@@ -1081,12 +1078,6 @@
             showToast('บันทึกลิงก์ปลดแบนสำเร็จ');
         }
 
-        function adminDeleteScript(id) {
-            scriptsData = scriptsData.filter(s => s.id !== id);
-            localStorage.setItem('jaysi_scripts', JSON.stringify(scriptsData));
-            renderScripts(); openProfileModal('admin'); showToast('ลบไฟล์เรียบร้อยแล้ว');
-        }
-
         function showToast(msg, type = 'emerald') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1097,72 +1088,94 @@
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(50px)'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
     </script>
+
+    <!-- Firebase Integration Module (แก้ไขโครงสร้างให้ถูกต้องสมบูรณ์) -->
     <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBnBNLcmNH8XQvyeb5a_eOEuLsNfz9h2pU",
-    authDomain: "jaysi-bd6fc.firebaseapp.com",
-    projectId: "jaysi-bd6fc",
-    storageBucket: "jaysi-bd6fc.firebasestorage.app",
-    messagingSenderId: "11493759829",
-    appId: "1:11493759829:web:6638eed155d75a3576eddc",
-    measurementId: "G-CWCJ7KTFJ4"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnBNLcmNH8XQvyeb5a_eOEuLsNfz9h2pU",
+            authDomain: "jaysi-bd6fc.firebaseapp.com",
+            projectId: "jaysi-bd6fc",
+            storageBucket: "jaysi-bd6fc.firebasestorage.app",
+            messagingSenderId: "11493759829",
+            appId: "1:11493759829:web:6638eed155d75a3576eddc",
+            measurementId: "G-CWCJ7KTFJ4"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    // ดึงข้อมูลแบบ Real-time จาก Firebase
-  onSnapshot(collection(db, "scripts"), (snapshot) => {
-    let loadedScripts = [];
-    snapshot.forEach((docSnap) => {
-      let data = docSnap.data();
-      loadedScripts.push({
-        id: docSnap.id,
-        title: data.title || data.name || 'ไม่มีชื่อ',
-        code: data.code || '',
-        author: data.author || 'ไม่ระบุ',
-        type: data.type || 'roblox' // กำหนดประเภทให้ตรงกับแท็บ (roblox หรือ web)
-      });
-    });
-    
-    console.log("ข้อมูลที่ดึงมาได้:", loadedScripts);
-    window.scriptsData = loadedScripts;
-    
-    // สั่งวาดหน้าจอใหม่ทันที
-    if (typeof renderScripts === 'function') {
-      renderScripts();
-    }
-  });
-    
-    // ส่งข้อมูลให้ตัวแปรของเว็บและ window พร้อมกัน
-    window.scriptsData = loadedScripts;
-    try { scriptsData = loadedScripts; } catch(e) {}
-    
-    // สั่งวาดหน้าจอใหม่ทันที
-    if (typeof renderScripts === 'function') {
-      renderScripts();
-    }
-  });
-        
-  });
+        // ดึงข้อมูลแบบ Real-time จาก Firebase Firestore
+        onSnapshot(collection(db, "scripts"), (snapshot) => {
+            let loadedScripts = [];
+            snapshot.forEach((docSnap) => {
+                let data = docSnap.data();
+                loadedScripts.push({
+                    id: docSnap.id,
+                    title: data.title || data.name || 'ไม่มีชื่อ',
+                    category: data.category || data.type || 'Roblox Script',
+                    description: data.description || '',
+                    scriptCode: data.scriptCode || data.code || '',
+                    downloadUrl: data.downloadUrl || '',
+                    posterUrl: data.posterUrl || '',
+                    fileData: data.fileData || '',
+                    fileName: data.fileName || '',
+                    author: data.author || 'ไม่ระบุ',
+                    downloads: data.downloads || 0
+                });
+            });
+            
+            console.log("ข้อมูลที่ดึงมาจาก Firebase สำเร็จ:", loadedScripts);
+            scriptsData = loadedScripts;
+            window.scriptsData = loadedScripts;
+            
+            // สั่งวาดหน้าจอใหม่ทันที
+            if (typeof renderScripts === 'function') {
+                renderScripts();
+            }
+            if (typeof initRealtimeStats === 'function') {
+                initRealtimeStats();
+            }
+        });
 
-  // ฟังก์ชันลบข้อมูลผ่าน Firebase
-  window.firebaseDeleteScript = async function(scriptId) {
-    await deleteDoc(doc(db, "scripts", scriptId));
-  };
+        // ฟังก์ชันลบข้อมูลผ่าน Firebase
+        window.firebaseDeleteScript = async function(scriptId) {
+            try {
+                await deleteDoc(doc(db, "scripts", scriptId));
+                showToast('ลบไฟล์ออกจาก Firebase สำเร็จ');
+                if (typeof openProfileModal === 'function') {
+                    openProfileModal('admin');
+                }
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                showToast('เกิดข้อผิดพลาดในการลบไฟล์', 'rose');
+            }
+        };
 
-  // ฟังก์ชันเพิ่มข้อมูลผ่าน Firebase
-  window.firebaseAddScript = async function(title, code, author) {
-    await addDoc(collection(db, "scripts"), {
-      title: title,
-      code: code,
-      author: author,
-      createdAt: new Date()
-    });
-  };
+        // ฟังก์ชันเพิ่มข้อมูลผ่าน Firebase
+        window.firebaseAddScript = async function(title, category, scriptCodeOrUrl, description, author, posterUrl) {
+            try {
+                await addDoc(collection(db, "scripts"), {
+                    title: title,
+                    category: category,
+                    scriptCode: scriptCodeOrUrl,
+                    description: description,
+                    author: author,
+                    posterUrl: posterUrl || '',
+                    downloads: 0,
+                    createdAt: new Date()
+                });
+                showToast('เพิ่มไฟล์ลงใน Firebase สำเร็จ!');
+                if (typeof openProfileModal === 'function') {
+                    openProfileModal('admin');
+                }
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showToast('เกิดข้อผิดพลาดในการเพิ่มไฟล์', 'rose');
+            }
+        };
     </script>
 </body>
 </html>
