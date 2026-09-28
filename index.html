@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JAYSI</title>
     
-    <!-- Open Graph Meta Tags สำหรับควบคุมรูปและข้อความเวลาแชร์ลิงก์ -->
+    <!-- Open Graph Meta Tags สำหรับควบคุมรูปและข้อความเวลาแชร์ลิงก์ (อัปเดตแบบเรียลไทม์)[span_2](start_span)[span_2](end_span) -->
     <meta property="og:title" content="JAYSI">
     <meta property="og:description" content="JAYS">
     <meta property="og:image" id="ogImageMeta" content="https://cdn.discordapp.com/attachments/1388811008096866395/1553963029417168947/file_000000005314820ba08be786531d379f.png?ex=6abb2859&is=6ab9d6d9&hm=3fe9c7b9aa90cd2579e7d0b447d443a1fa55124721176d91f92770ec91d658b5&">
@@ -127,10 +127,9 @@
             </div>
 
             <div class="flex items-center space-x-3">
-                <!-- ปรับปุ่มเข้าสู่ระบบให้เล็กลงและกะทัดรัดขึ้น -->
                 <div id="authSection">
-                    <button onclick="openGoogleOAuthModal()" class="flex items-center space-x-1.5 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-full text-[11px] font-semibold transition shadow-md shadow-primary-500/20">
-                        <i class="fa-brands fa-google text-xs"></i>
+                    <button onclick="openGoogleOAuthModal()" class="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-full text-xs font-semibold transition shadow-md shadow-primary-500/20">
+                        <i class="fa-brands fa-google"></i>
                         <span>เข้าสู่ระบบด้วย Google</span>
                     </button>
                 </div>
@@ -344,7 +343,8 @@
             }
         };
 
-        let scriptsData = JSON.parse(localStorage.getItem('jaysi_scripts')) || [];
+        let scriptsData = [];
+        let allUsersData = []; // ข้อมูลผู้ใช้แบบ Real-time จาก Firebase
         let currentUser = null;
         let downloadHistory = JSON.parse(localStorage.getItem('jaysi_history')) || [];
         let siteLogo = localStorage.getItem('jaysi_logo') || '';
@@ -371,22 +371,15 @@
             const savedUser = localStorage.getItem('jaysi_user');
             if (savedUser) { 
                 currentUser = JSON.parse(savedUser); 
-                let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
-                let foundUser = allUsers.find(u => u.email === currentUser.email);
-                if (foundUser && foundUser.isBanned) { openBanModal(); logout(); return; }
                 currentUser.isAdmin = adminList.includes(currentUser.email);
                 updateAuthUI(); 
             }
-            renderAnnouncements(); renderCategoriesUI(); renderPostersSlider(); renderScripts(); renderContactsUI(); initRealtimeStats();
+            renderAnnouncements(); renderCategoriesUI(); renderPostersSlider(); renderContactsUI();
         });
 
         /* Google OAuth Login Handlers */
-        function openGoogleOAuthModal() {
-            document.getElementById('oauthModal').classList.remove('hidden');
-        }
-        function closeGoogleOAuthModal() {
-            document.getElementById('oauthModal').classList.add('hidden');
-        }
+        function openGoogleOAuthModal() { document.getElementById('oauthModal').classList.remove('hidden'); }
+        function closeGoogleOAuthModal() { document.getElementById('oauthModal').classList.add('hidden'); }
 
         function parseJwt(token) {
             try {
@@ -401,6 +394,7 @@
             }
         }
 
+        // จัดการเมื่อเข้าสู่ระบบด้วย Google (บันทึกลง Firebase Firestore แบบ Real-time)
         function handleCredentialResponse(response) {
             const responsePayload = parseJwt(response.credential);
             if (!responsePayload) {
@@ -411,9 +405,8 @@
             const name = responsePayload.name;
             const avatar = responsePayload.picture;
 
-            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
-            let existingUser = allUsers.find(u => u.email === email);
-
+            // ตรวจสอบว่าผู้ใช้นี้ถูกแบนในฐานข้อมูล Real-time หรือไม่
+            let existingUser = allUsersData.find(u => u.email === email);
             if (existingUser && existingUser.isBanned) {
                 closeGoogleOAuthModal();
                 openBanModal();
@@ -427,21 +420,18 @@
                 name,
                 avatar,
                 myId,
-                isAdmin: adminList.includes(email)
+                isAdmin: adminList.includes(email),
+                isBanned: false
             };
 
-            if (!existingUser) {
-                allUsers.push({ email, name, avatar, myId, isBanned: false });
-            } else {
-                existingUser.name = name;
-                existingUser.avatar = avatar;
+            // บันทึก/อัปเดตข้อมูลผู้ใช้ลง Firestore ผ่านฟังก์ชันส่วนกลาง
+            if (typeof window.firebaseSaveUser === 'function') {
+                window.firebaseSaveUser(currentUser);
             }
-            localStorage.setItem('jaysi_all_users', JSON.stringify(allUsers));
-            localStorage.setItem('jaysi_user', JSON.stringify(currentUser));
 
+            localStorage.setItem('jaysi_user', JSON.stringify(currentUser));
             closeGoogleOAuthModal();
             updateAuthUI();
-            initRealtimeStats();
             showToast(`ยินดีต้อนรับคุณ ${name} เข้าสู่ระบบสำเร็จ`);
         }
 
@@ -519,12 +509,15 @@
         setInterval(() => { if (postersData.length > 1) { currentSlideIndex = (currentSlideIndex + 1) % postersData.length; showSlide(currentSlideIndex); } }, 6000);
 
         function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
+        
+        // ฟังก์ชันอัปเดตสถิติต่างๆ แบบ Real-time
         function initRealtimeStats() {
             document.getElementById('realtimeOnlineCount').innerText = '1';
-            document.getElementById('realtimeUsersCount').innerText = (JSON.parse(localStorage.getItem('jaysi_all_users')) || []).length;
+            document.getElementById('realtimeUsersCount').innerText = allUsersData.length;
             document.getElementById('realtimeFilesCount').innerText = scriptsData.length;
         }
 
+        // ฟังก์ชันอัปเดตโลโก้ หน้าเว็บ และ Open Graph Meta Tags แบบเรียลไทม์[span_3](start_span)[span_3](end_span)
         function updateLogoUI() {
             const logoImg = document.getElementById('brandLogoImg');
             const logoIcon = document.getElementById('brandLogoIcon');
@@ -630,8 +623,7 @@
             const q = query.toLowerCase();
             const container = document.getElementById('adminUsersListContainer');
             if (!container) return;
-            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
-            let filtered = allUsers.filter(u => (u.name && u.name.toLowerCase().includes(q)) || (u.email && u.email.toLowerCase().includes(q)) || (u.myId && u.myId.toLowerCase().includes(q)));
+            let filtered = allUsersData.filter(u => (u.name && u.name.toLowerCase().includes(q)) || (u.email && u.email.toLowerCase().includes(q)) || (u.myId && u.myId.toLowerCase().includes(q)));
             container.innerHTML = generateAdminUsersHtml(filtered);
         }
 
@@ -662,8 +654,7 @@
         }
 
         function openUserDetailModal(email) {
-            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
-            let user = allUsers.find(u => u.email === email);
+            let user = allUsersData.find(u => u.email === email);
             if (!user) return;
             const isSuper = user.email === SUPER_ADMIN_EMAIL;
             const isAdmin = adminList.includes(user.email);
@@ -867,7 +858,6 @@
                 `;
             } else if (tab === 'admin' && currentUser.isAdmin) {
                 adminBtn.className = "px-3.5 py-2 rounded-full text-xs font-semibold bg-amber-500 text-white transition";
-                let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
                 let categoryOptionsHtml = categoriesData.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
                 let initialIconsHtml = masterIconList.map(ic => `
                     <button type="button" onclick="copyIconCode('${ic}')" title="${ic}" class="p-2 bg-slate-900 hover:bg-primary-600 hover:text-white rounded-xl border border-slate-800 text-slate-300 flex items-center justify-center transition text-sm">
@@ -992,14 +982,14 @@
 
                         <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl">
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
-                                <h4 class="text-xs font-bold text-blue-400"><i class="fa-solid fa-users-gear mr-2"></i>จัดการผู้ใช้งานทั้งหมด (${allUsers.length})</h4>
+                                <h4 class="text-xs font-bold text-blue-400"><i class="fa-solid fa-users-gear mr-2"></i>จัดการผู้ใช้งานทั้งหมดแบบเรียลไทม์ (${allUsersData.length})</h4>
                                 <div class="relative w-full sm:w-48">
                                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass text-[10px]"></i></span>
                                     <input type="text" oninput="filterAdminUsers(this.value)" placeholder="ค้นหาผู้ใช้..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-[11px] text-slate-100 outline-none">
                                 </div>
                             </div>
                             <div id="adminUsersListContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                ${generateAdminUsersHtml(allUsers)}
+                                ${generateAdminUsersHtml(allUsersData)}
                             </div>
                         </div>
 
@@ -1061,13 +1051,12 @@
 
         function toggleBanUser(email) {
             if (email === SUPER_ADMIN_EMAIL) { showToast('ไม่สามารถแบนซูเปอร์แอดมินหลักได้'); return; }
-            let allUsers = JSON.parse(localStorage.getItem('jaysi_all_users')) || [];
-            let u = allUsers.find(item => item.email === email);
-            if (u) {
-                u.isBanned = !u.isBanned;
-                localStorage.setItem('jaysi_all_users', JSON.stringify(allUsers));
-                openProfileModal('admin');
-                showToast(u.isBanned ? `แบนผู้ใช้ ${email} แล้ว` : `ปลดแบนผู้ใช้ ${email} แล้ว`);
+            let targetUser = allUsersData.find(item => item.email === email);
+            if (targetUser) {
+                let newBanStatus = !targetUser.isBanned;
+                if (typeof window.firebaseUpdateUserBanStatus === 'function') {
+                    window.firebaseUpdateUserBanStatus(email, newBanStatus);
+                }
             }
         }
 
@@ -1089,10 +1078,10 @@
         }
     </script>
 
-    <!-- Firebase Integration Module -->
+    <!-- Firebase Integration Module (อัปเกรดระบบ Real-time ทั้ง Scripts และ Users) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, addDoc, setDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBnBNLcmNH8XQvyeb5a_eOEuLsNfz9h2pU",
@@ -1107,6 +1096,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // 1. ดึงข้อมูล scripts แบบ Real-time
         onSnapshot(collection(db, "scripts"), (snapshot) => {
             let loadedScripts = [];
             snapshot.forEach((docSnap) => {
@@ -1125,31 +1115,79 @@
                     downloads: data.downloads || 0
                 });
             });
-            
             scriptsData = loadedScripts;
             window.scriptsData = loadedScripts;
-            
-            if (typeof renderScripts === 'function') {
-                renderScripts();
+            if (typeof renderScripts === 'function') renderScripts();
+            if (typeof initRealtimeStats === 'function') initRealtimeStats();
+        });
+
+        // 2. ดึงข้อมูล users แบบ Real-time (ทำให้ยอดบัญชีผู้ใช้ทั้งหมด และตารางแอดมินอัปเดตทันที)
+        onSnapshot(collection(db, "users"), (snapshot) => {
+            let loadedUsers = [];
+            snapshot.forEach((docSnap) => {
+                loadedUsers.push(docSnap.data());
+            });
+            allUsersData = loadedUsers;
+            window.allUsersData = loadedUsers;
+
+            // ตรวจสอบสถานะแบนของบัญชีที่กำลังใช้งานอยู่ปัจจุบันแบบเรียลไทม์
+            if (currentUser) {
+                let me = loadedUsers.find(u => u.email === currentUser.email);
+                if (me && me.isBanned) {
+                    if (typeof openBanModal === 'function') openBanModal();
+                    if (typeof logout === 'function') logout();
+                }
             }
-            if (typeof initRealtimeStats === 'function') {
-                initRealtimeStats();
+
+            if (typeof initRealtimeStats === 'function') initRealtimeStats();
+            // หากเปิดหน้าต่างแอดมินอยู่ ให้รีเฟรชตารางผู้ใช้ด้วย
+            const adminUsersContainer = document.getElementById('adminUsersListContainer');
+            if (adminUsersContainer && typeof generateAdminUsersHtml === 'function') {
+                adminUsersContainer.innerHTML = generateAdminUsersHtml(allUsersData);
             }
         });
 
+        // ฟังก์ชันบันทึกผู้ใช้ลง Firebase
+        window.firebaseSaveUser = async function(userData) {
+            try {
+                await setDoc(doc(db, "users", userData.email), {
+                    email: userData.email,
+                    name: userData.name,
+                    avatar: userData.avatar,
+                    myId: userData.myId,
+                    isBanned: userData.isBanned || false,
+                    updatedAt: new Date()
+                }, { merge: true });
+            } catch (error) {
+                console.error("Error saving user: ", error);
+            }
+        };
+
+        // ฟังก์ชันอัปเดตสถานะแบนผู้ใช้ใน Firebase
+        window.firebaseUpdateUserBanStatus = async function(email, isBanned) {
+            try {
+                await updateDoc(doc(db, "users", email), { isBanned: isBanned });
+                showToast(isBanned ? `แบนผู้ใช้ ${email} แล้ว` : `ปลดแบนผู้ใช้ ${email} แล้ว`);
+                if (typeof openProfileModal === 'function') openProfileModal('admin');
+            } catch (error) {
+                console.error("Error updating ban status: ", error);
+                showToast('เกิดข้อผิดพลาดในการเปลี่ยนสถานะแบน', 'rose');
+            }
+        };
+
+        // ฟังก์ชันลบไฟล์/สคริปต์ผ่าน Firebase
         window.firebaseDeleteScript = async function(scriptId) {
             try {
                 await deleteDoc(doc(db, "scripts", scriptId));
                 showToast('ลบไฟล์ออกจาก Firebase สำเร็จ');
-                if (typeof openProfileModal === 'function') {
-                    openProfileModal('admin');
-                }
+                if (typeof openProfileModal === 'function') openProfileModal('admin');
             } catch (error) {
                 console.error("Error deleting document: ", error);
                 showToast('เกิดข้อผิดพลาดในการลบไฟล์', 'rose');
             }
         };
 
+        // ฟังก์ชันเพิ่มไฟล์/สคริปต์ผ่าน Firebase
         window.firebaseAddScript = async function(title, category, scriptCodeOrUrl, description, author, posterUrl) {
             try {
                 await addDoc(collection(db, "scripts"), {
@@ -1163,9 +1201,7 @@
                     createdAt: new Date()
                 });
                 showToast('เพิ่มไฟล์ลงใน Firebase สำเร็จ!');
-                if (typeof openProfileModal === 'function') {
-                    openProfileModal('admin');
-                }
+                if (typeof openProfileModal === 'function') openProfileModal('admin');
             } catch (error) {
                 console.error("Error adding document: ", error);
                 showToast('เกิดข้อผิดพลาดในการเพิ่มไฟล์', 'rose');
